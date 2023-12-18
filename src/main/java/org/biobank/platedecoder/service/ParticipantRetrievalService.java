@@ -3,14 +3,15 @@ package org.biobank.platedecoder.service;
 import java.util.Arrays;
 import java.util.List;
 
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.Response;
 import org.biobank.platedecoder.model.Participant;
 import org.biobank.platedecoder.model.PmiDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
-import com.ning.http.client.Response;
+import static org.asynchttpclient.Dsl.*;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -141,4 +142,3 @@ public class ParticipantRetrievalService extends Service<ObservableList<Particip
 
     }
 }
-

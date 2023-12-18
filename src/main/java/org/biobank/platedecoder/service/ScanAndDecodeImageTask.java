@@ -1,9 +1,14 @@
 package org.biobank.platedecoder.service;
 
 import static org.biobank.platedecoder.dmscanlib.ScanLib.ResultCode.SC_SUCCESS;
+import static org.biobank.platedecoder.dmscanlib.ScanLib.ResultCode.SC_FAIL;;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.imageio.ImageIO;
 
 import org.biobank.platedecoder.dmscanlib.CellRectangle;
 import org.biobank.platedecoder.dmscanlib.DecodeOptions;
@@ -16,6 +21,8 @@ import org.biobank.platedecoder.model.PlateDecoderPreferences;
 import org.biobank.platedecoder.model.PlateOrientation;
 import org.biobank.platedecoder.model.PlateType;
 import org.biobank.platedecoder.ui.PlateDecoder;
+import org.libdmtx.DMTXImage;
+import org.libdmtx.DMTXTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,17 +133,38 @@ public class ScanAndDecodeImageTask extends Task<ScanLibResult> {
 
    protected DecodeResult decode() {
       Set<CellRectangle> cells =
-         CellRectangle.getCellsForBoundingBox(scanRect,
-                                              orientation,
-                                              plateType,
-                                              barcodePosition);
+          CellRectangle.getCellsForBoundingBox(
+              scanRect,
+              orientation,
+              plateType,
+              barcodePosition);
 
-      DecodeResult result =
-         ScanLib.getInstance().decodeImage(decodeDebugLevel,
-                                           filename,
-                                           decodeOptions,
-                                           cells.toArray(new CellRectangle[] {}));
-      return result;
+        try {
+            var result = new DecodeResult(SC_SUCCESS, SC_SUCCESS, "success");
+            var image = ImageIO.read(new File(filename));
+            cells.stream().forEach(cell -> {
+                    var crop = image.getSubimage(
+                        (int) cell.getX(),
+                        (int) cell.getY(),
+                        (int) cell.getWidth(),
+                        (int) cell.getHeight());
+
+                    var dmtxImage = new DMTXImage(crop);
+                    var tags = dmtxImage.getTags(1, 10000);
+
+                    LOG.info("cell: {}, tags: {}", cell.getLabel(), tags.length);
+
+                    if (tags != null) {
+                        for (DMTXTag tag : tags) {
+                            result.addWell(cell.getLabel(), tag.id);
+                        }
+                    }
+                });
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new DecodeResult(SC_FAIL, SC_FAIL, e.getMessage());
+        }
    }
 
 }

@@ -2,12 +2,13 @@ package org.biobank.platedecoder.service;
 
 import java.util.List;
 
+import org.asynchttpclient.Response;
 import org.biobank.platedecoder.model.Site;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.ning.http.client.Response;
+import static org.asynchttpclient.Dsl.*;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -71,4 +72,3 @@ public class SiteRetrievalService extends Service<ObservableList<Site>> {
     }
 
 }
-

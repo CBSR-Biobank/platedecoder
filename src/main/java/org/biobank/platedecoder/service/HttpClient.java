@@ -1,11 +1,14 @@
 package org.biobank.platedecoder.service;
 
 import java.util.Base64;
+
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.BoundRequestBuilder;
+
 import java.nio.charset.StandardCharsets;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
-import com.ning.http.client.AsyncHttpClientConfig;
+import static org.asynchttpclient.Dsl.*;
 
 public class HttpClient {
 
@@ -22,16 +25,13 @@ public class HttpClient {
         this.userName = "admin@admin.com";
         this.password = "Areallybadpassword1"; // "Login!@3";
 
-        AsyncHttpClientConfig config = new AsyncHttpClientConfig.Builder()
+        asyncHttpClient = asyncHttpClient(config()
             .setConnectTimeout(DEFAULT_CONNECTION_TIMEOUT_IN_MS)
-            .setRequestTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MS)
-            .build();
-
-        asyncHttpClient = new AsyncHttpClient(config);
+            .setRequestTimeout(DEFAULT_REQUEST_TIMEOUT_IN_MS));
     }
 
     public void close() {
-        asyncHttpClient.close();
+        //asyncHttpClient.close();
     }
 
     public BoundRequestBuilder prepareGet(String url) {

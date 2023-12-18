@@ -100,34 +100,34 @@ public class PlateDecoder extends Application implements SceneChanger {
     * Start scene can be set when DEBUG mode is on.
     */
    private void setStartScene() {
-       Map<String, String> namedArgs = getParameters().getNamed();
-       String startScene = null;
+      Map<String, String> namedArgs = getParameters().getNamed();
+      String startScene = null;
 
         namedArgs.entrySet().stream().forEach(a -> LOG.info("arg: {}", a));
 
-       if (IS_DEBUG_MODE) {
-           startScene = namedArgs.get("scene");
-       }
+      if (IS_DEBUG_MODE) {
+         startScene = namedArgs.get("scene");
+      }
 
         LOG.info("start scene: {}", startScene);
 
-       if (startScene == null) {
+      if (startScene == null) {
          setScene();
-       } else {
-           switch (startScene) {
-               case "testdecode":
-                   setSceneTestDecode();
-                   break;
+      } else {
+         switch (startScene) {
+            case "testdecode":
+               setSceneTestDecode();
+               break;
 
-               case "scanningregion":
-                   setSceneScanningRegion();
-                   break;
+            case "scanningregion":
+               setSceneScanningRegion();
+               break;
 
-               case "specimenlink":
-                   setSceneTestSpecimenLink();
-                   break;
-           }
-       }
+            case "specimenlink":
+               setSceneTestSpecimenLink();
+               break;
+         }
+      }
    }
 
    // DEBGUG code

@@ -4,6 +4,7 @@ import static org.biobank.platedecoder.ui.JavaFxHelper.createButton;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Optional;
@@ -256,7 +257,7 @@ public class DecodeImageScene extends SceneRoot implements WellGridHandler {
 
    private String getFilenameFromImageSource() {
       try {
-         URL imageUrl = new URL(imageSource.getImageFileUrl());
+         URL imageUrl = new URI(imageSource.getImageFileUrl()).toURL();
          File file = new File(imageUrl.toURI());
          return file.toString();
       } catch (URISyntaxException | MalformedURLException ex) {

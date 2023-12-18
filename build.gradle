@@ -152,13 +152,13 @@ distributions {
     main {
         contents {
           from("lib") {
-            into "lib"
-          }
+    into "lib"
+}
 
           from("./") {
-            include "*.dll"
-            into ""
-          }
+   include "*.dll"
+   into ""
+}
         }
     }
 }
@@ -174,8 +174,8 @@ publishing {
         maven {
             name = 'sampleRepo'
             url = layout.buildDirectory.dir("repo")
-        }
-    }
+      }
+   }
 }
 
 // eclipse.classpath {
