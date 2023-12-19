@@ -2,26 +2,41 @@
 // Gradle build file for platedecoder project.
 //
 
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'eclipse'
-apply plugin: 'distribution'
+plugins {
+  id 'java'
+  id 'org.javamodularity.moduleplugin' version "1.8.12"
+  id 'application'
+  id 'org.openjfx.javafxplugin' version '0.1.0'
+}
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+apply plugin: 'distribution'
+apply plugin: 'maven-publish'
+
+sourceCompatibility = 17
+// targetCompatibility = 1.8
+
+group = "org.biobank"
+version = "0.0.1"
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 version = '0.1-SNAPSHOT'
 
-mainClassName = "org.biobank.platedecoder.ui.PlateDecoder"
+javafx {
+    version = "17.0.8"
+    modules = [ 'javafx.controls' ]
+}
+
+application {
+ mainClass = "org.biobank.platedecoder.ui.PlateDecoder"
+ applicationDefaultJvmArgs = ["-Djava.library.path=./lib"]
+}
 
 jar {
    manifest.attributes "Main-Class": "org.biobank.platedecoder.ui.PlateDecoder"
 }
 
 repositories {
-   mavenLocal()
    mavenCentral()
    maven { url "https://github.com/cbsrbiobank/biobank-maven-repo/raw/master/" }
 }
@@ -32,21 +47,42 @@ configurations {
 }
 
 dependencies {
-   compile (
-      'org.slf4j:slf4j-api:1.7.1', 'org.slf4j:slf4j-log4j12:1.7.12',
-      'org.controlsfx:controlsfx:8.40.9',
-      'net.sf.supercsv:super-csv:2.3.1',
-      'org.apache.commons:commons-lang3:3.4',
-      'commons-codec:commons-codec:1.10',
-      'javax.json:javax.json-api:1.0',
-      'com.ning:async-http-client:1.9.31',
-      'com.fasterxml.jackson.jr:jackson-jr-all:2.6.2')
 
-   runtime 'org.glassfish:javax.json:1.0.4'
+  // https://mvnrepository.com/artifact/org.openjfx/javafx-base
+  implementation group: 'org.openjfx', name: 'javafx-base', version: '17.0.9'
 
-   testCompile (
-      'junit:junit:4.12',
-      'de.saxsys:jfx-testrunner:1.1')
+  // https://mvnrepository.com/artifact/jakarta.json/jakarta.json-api
+  implementation group: 'jakarta.json', name: 'jakarta.json-api', version: '2.1.3'
+
+  // https://mvnrepository.com/artifact/org.asynchttpclient/async-http-client
+  implementation group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.3'
+
+  // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+  // implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.3'
+
+  // https://mvnrepository.com/artifact/com.fasterxml.jackson.jr/jackson-jr-objects
+  implementation group: 'com.fasterxml.jackson.jr', name: 'jackson-jr-objects', version: '2.16.0'
+
+  // https://mvnrepository.com/artifact/org.glassfish/jakarta.json
+  implementation group: 'org.glassfish', name: 'jakarta.json', version: '2.0.1'
+
+  // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
+
+  // https://mvnrepository.com/artifact/commons-codec/commons-codec
+  implementation group: 'commons-codec', name: 'commons-codec', version: '1.16.0'
+
+   implementation (
+      'org.slf4j:slf4j-api:2.0.9',
+      'org.slf4j:slf4j-log4j12:2.0.9',
+      'org.controlsfx:controlsfx:11.2.0',
+      'net.sf.supercsv:super-csv:2.4.0')
+
+  // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.1'
+
+  // https://mvnrepository.com/artifact/de.saxsys/jfx-testrunner
+  testImplementation group: 'de.saxsys', name: 'jfx-testrunner', version: '1.2'
 
    nativeBundles (
       'scanlib:libdmscanlib64:3.0.0-ubuntu15.10',
@@ -73,11 +109,9 @@ tasks.withType(JavaExec) {
    jvmArgs '-Xmx1024m'
 }
 
-applicationDefaultJvmArgs = ["-Djava.library.path=./lib"]
-
-task wrapper(type: Wrapper) {
-   gradleVersion = '2.5'
-}
+//task wrapper(type: Wrapper) {
+//   gradleVersion = '2.5'
+//}
 
 allprojects {
    gradle.projectsEvaluated {
@@ -114,32 +148,49 @@ task copyNativeDlls(type: Sync) {
 
 compileJava.dependsOn copyNativeBundles, copyNativeDlls
 
-task listJars << {
-   configurations.compile.each { File file -> println file.name }
+distributions {
+    main {
+        contents {
+          from("lib") {
+            into "lib"
+          }
+
+          from("./") {
+            include "*.dll"
+            into ""
+          }
+        }
+    }
 }
 
-applicationDistribution.from("lib") {
-    into "lib"
+publishing {
+    publications {
+        customLibrary(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'sampleRepo'
+            url = layout.buildDirectory.dir("repo")
+        }
+    }
 }
 
-applicationDistribution.from("./") {
-   include "*.dll"
-   into ""
-}
-
-eclipse.classpath {
-
-   /* With sources, it's much more convenient in debugging */
-   downloadSources = true
-   downloadJavadoc = true
-
-   /* Ugly hack to stick the JNI pointer into the .classpath file. */
-   file.withXml { provider ->
-      provider.asNode().findAll { it.@path.contains('org.eclipse.jdt.launching.JRE_CONTAINER') }.each {
-         it.appendNode('attributes')
-         .appendNode('attribute',
-                     [ name: 'org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY',
-                       value: 'platedecoder/lib' ])
-      }
-   }
-}
+// eclipse.classpath {
+//
+//    /* With sources, it's much more convenient in debugging */
+//    downloadSources = true
+//    downloadJavadoc = true
+//
+//    /* Ugly hack to stick the JNI pointer into the .classpath file. */
+//    file.withXml { provider ->
+//       provider.asNode().findAll { it.@path.contains('org.eclipse.jdt.launching.JRE_CONTAINER') }.each {
+//          it.appendNode('attributes')
+//          .appendNode('attribute',
+//                      [ name: 'org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY',
+//                        value: 'platedecoder/lib' ])
+//       }
+//    }
+// }

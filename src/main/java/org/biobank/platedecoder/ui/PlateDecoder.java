@@ -26,9 +26,11 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 /**
- * This class manages how all the scenes that make up the application are connected.
+ * This class manages how all the scenes that make up the application are
+ * connected.
  *
- * <p>It is the main class for this JavaFX application.
+ * <p>
+ * It is the main class for this JavaFX application.
  */
 public class PlateDecoder extends Application implements SceneChanger {
 
@@ -68,7 +70,8 @@ public class PlateDecoder extends Application implements SceneChanger {
    public <T extends SceneRoot> void changeScene(T sceneRoot) {
       Scene scene = stage.getScene();
       if (scene != null) {
-         // theprevious scene's root has to be cleared so we dont get an exception when user
+            // theprevious scene's root has to be cleared so we dont get an exception when
+            // user
          // enters the scene again
          scene.setRoot(new Region());
       }
@@ -97,30 +100,34 @@ public class PlateDecoder extends Application implements SceneChanger {
     * Start scene can be set when DEBUG mode is on.
     */
    private void setStartScene() {
-      Map<String, String> namedArgs = getParameters().getNamed();
-      String startScene = null;
+       Map<String, String> namedArgs = getParameters().getNamed();
+       String startScene = null;
 
-      if (IS_DEBUG_MODE) {
-         startScene = namedArgs.get("scene");
-      }
+        namedArgs.entrySet().stream().forEach(a -> LOG.info("arg: {}", a));
 
-      if (startScene == null) {
+       if (IS_DEBUG_MODE) {
+           startScene = namedArgs.get("scene");
+       }
+
+        LOG.info("start scene: {}", startScene);
+
+       if (startScene == null) {
          setScene();
-      } else {
-         switch (startScene) {
-            case "testdecode":
-               setSceneTestDecode();
-               break;
+       } else {
+           switch (startScene) {
+               case "testdecode":
+                   setSceneTestDecode();
+                   break;
 
-            case "scanningregion":
-               setSceneScanningRegion();
-               break;
+               case "scanningregion":
+                   setSceneScanningRegion();
+                   break;
 
-            case "specimenlink":
-               setSceneTestSpecimenLink();
-               break;
-         }
-      }
+               case "specimenlink":
+                   setSceneTestSpecimenLink();
+                   break;
+           }
+       }
    }
 
    // DEBGUG code
@@ -145,7 +152,7 @@ public class PlateDecoder extends Application implements SceneChanger {
       changeScene(decodeImage);
       decodeImage.setImageSource(
          new ImageSourceFileSystem(
-            "file:///home/nelson/Desktop/testImages/8x12/FrozenPalletImages/HP_L1985A/scanned4.bmp"));
+                        "file:///home/nelson/Dropbox/CBSR/scanlib/testImages/8x12/96tubes.bmp"));
    }
 
    // DEBUG code
@@ -172,7 +179,8 @@ public class PlateDecoder extends Application implements SceneChanger {
    /**
     * The file name used to store the image of the entire flatbed scanning region..
     *
-    * @return the file name used to store the image of the entire flatbed scanning region.
+     * @return the file name used to store the image of the entire flatbed scanning
+     *         region.
     */
    public static String flatbedImageFilenameToUrl() {
       return userDirFilenameToUrl(FLATBED_IMAGE_NAME);
@@ -213,6 +221,5 @@ public class PlateDecoder extends Application implements SceneChanger {
       buf.append(filename);
       return buf.toString();
    }
-
 
 }
